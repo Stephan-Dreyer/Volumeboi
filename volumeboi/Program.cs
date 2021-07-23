@@ -867,10 +867,18 @@ namespace AudioController
             return result;
         }
 
+        //static void update_volume(int index, int[] prev, List<int> Volume) {
 
+        //    if (prev_volumes[0] != volumes[0])
+        //    {
+        //        AudioManager.SetApplicationVolume(active_ID, volumes[0]);
+        //    }
+
+        //}
         static void Main(string[] args)
 
         {
+           
             int[] prev_volumes = new int[4];
             string[] initial_ports = { "0" };
             var output = find_arduino(initial_ports);
@@ -893,33 +901,42 @@ namespace AudioController
                     int active_ID;
                     GetWindowThreadProcessId(hWnd, out active_ID);
 
+
+                    // set active aplication
+
+                    if (prev_volumes[0] != volumes[0])
+                    {
+                        AudioManager.SetApplicationVolume(active_ID, volumes[0]);
+                    }
+
                     if (prev_volumes[1] != volumes[1])
                     {
                         var discord_processes = Process.GetProcessesByName("Discord");
-                        for (int i = 0; i < discord_processes.Length; i++)
+                        if (discord_processes.Length > 0)
                         {
+
                             //if (active_ID == discord_processes[i].Id) use_active = false;// check if discord is active program
                             AudioManager.SetApplicationVolume(discord_processes[4].Id, volumes[1]);
-
                         }
+                        else {
+                            Console.WriteLine("discord not open");
+                       }
+
                     }
                     if (prev_volumes[2] != volumes[2])
                     {
                         var firefox_processes = Process.GetProcessesByName("Firefox");
+                        if (firefox_processes.Length > 0) { 
                         for (int i = 0; i < firefox_processes.Length; i++)
                         {
                             //if (active_ID == firefox_processes[i].Id) use_active = false; // check if firefox is active program
                             AudioManager.SetApplicationVolume(firefox_processes[i].Id, volumes[2]);
                         }
                     }
-                    // if firefox or discord arent the acitve program
+                    }
                  
-                        if (prev_volumes[0] != volumes[0])
-                        {
-                            AudioManager.SetApplicationVolume(active_ID, volumes[0]);
-                        }
                    
-
+                        // create previous  volumes array
                     for (int i = 0; i < prev_volumes.Length; i++)
                     {
                         prev_volumes[i] = volumes[i];
