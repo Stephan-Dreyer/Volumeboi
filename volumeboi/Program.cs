@@ -790,7 +790,7 @@ namespace AudioController
 
             if (!ports.SequenceEqual(prev_ports) )
             {
-                for (int j = 0; j < 10; j++)
+                for (int j = 0; j < 100; j++)
                 {
                     Console.WriteLine("itteration " + j);
                     List<SerialPort> Portslist = new List<SerialPort>();
@@ -804,6 +804,8 @@ namespace AudioController
                         Portslist[i].PortName = ports[i];
                         Portslist[i].BaudRate = 112500;
                         Portslist[i].ReadTimeout = 500;
+                        Portslist[i].RtsEnable = true;
+                        Portslist[i].DtrEnable = true;
                         try
                         {
                             Portslist[i].Open();
@@ -818,8 +820,9 @@ namespace AudioController
 
                     }
 
-                    foreach (int busy in busyports)
+                    for (int i = busyports.Count-1; i >= 0 ; i--)
                     {
+                        int busy = busyports[i];
                         Portslist.RemoveAt(busy);
                     }
 
@@ -828,9 +831,9 @@ namespace AudioController
 
                     {
                         string ping;
-                        Portslist[i].Write("!");
                         try
                         {
+                            Portslist[i].Write("!");
                             ping = Portslist[i].ReadLine();
                             Console.WriteLine("response recieved from device: " + ping);
                         }
@@ -876,10 +879,9 @@ namespace AudioController
 
         //}
         static void Main(string[] args)
-
         {
            
-            int[] prev_volumes = new int[4];
+            int[] prev_volumes = new int[3];
             string[] initial_ports = { "0" };
             var output = find_arduino(initial_ports);
             SerialPort _serialPort = output.Item1;
