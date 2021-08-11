@@ -922,6 +922,19 @@ namespace AudioController
                             Console.WriteLine("discord not open");
                        }
 
+                        if (prev_volumes[1] != volumes[1])
+                        {
+                            var zoom_processes = Process.GetProcessesByName("Zoom");
+                            if (zoom_processes.Length > 0)
+                            {
+                                for (int i = 0; i < zoom_processes.Length; i++)
+                                {
+                                    //if (active_ID == firefox_processes[i].Id) use_active = false; // check if firefox is active program
+                                    AudioManager.SetApplicationVolume(zoom_processes[i].Id, volumes[1]);
+                                }
+                            }
+                        }
+
                     }
                     if (prev_volumes[2] != volumes[2])
                     {

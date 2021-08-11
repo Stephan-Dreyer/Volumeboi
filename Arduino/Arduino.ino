@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 // constants
-#define thresh 10
 #define alpha 0.2
 //funciton defs
 int calc_percentage(int pot,int* prev);
