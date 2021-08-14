@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.IO;
 // ReSharper disable SuspiciousTypeConversion.Global
 // ReSharper disable InconsistentNaming
 
@@ -780,26 +781,41 @@ namespace AudioController
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int processId);
 
+    }
+    #endregion
+
+    public class AudioController
+    {
+        private static string logFile =  Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "volume_boi_log.txt");
+
+        static void LogMessage(string message)
+        {
+            Console.WriteLine(message);
+
+            using (StreamWriter sw = File.AppendText(logFile))
+                sw.WriteLine(message);
+        }
+
 
         static Tuple<SerialPort, string[]> find_arduino(string[] prev_ports)
         {
             string[] ports = SerialPort.GetPortNames();
             bool found = false;
 
-  
 
-            if (!ports.SequenceEqual(prev_ports) )
+
+            if (!ports.SequenceEqual(prev_ports))
             {
                 for (int j = 0; j < 100; j++)
                 {
-                    Console.WriteLine("itteration " + j);
+                    LogMessage("itteration " + j);
                     List<SerialPort> Portslist = new List<SerialPort>();
                     List<int> busyports = new List<int>();
 
                     for (int i = 0; i < ports.Length; i++)
 
                     {
-                        Console.WriteLine(ports[i]);
+                        LogMessage(ports[i]);
                         Portslist.Add(new SerialPort());
                         Portslist[i].PortName = ports[i];
                         Portslist[i].BaudRate = 112500;
@@ -812,7 +828,7 @@ namespace AudioController
                         }
                         catch
                         {
-                            Console.WriteLine("port " + ports[i] + " busy");
+                            LogMessage("port " + ports[i] + " busy");
                             busyports.Add(i);
                         }
 
@@ -820,7 +836,7 @@ namespace AudioController
 
                     }
 
-                    for (int i = busyports.Count-1; i >= 0 ; i--)
+                    for (int i = busyports.Count - 1; i >= 0; i--)
                     {
                         int busy = busyports[i];
                         Portslist.RemoveAt(busy);
@@ -835,30 +851,30 @@ namespace AudioController
                         {
                             Portslist[i].Write("!");
                             ping = Portslist[i].ReadLine();
-                            Console.WriteLine("response recieved from device: " + ping);
+                            LogMessage("response recieved from device: " + ping);
                         }
                         catch (TimeoutException)
                         {
-                            Console.WriteLine("Arduino is not at " + Portslist[i].PortName);
+                            LogMessage("Arduino is not at " + Portslist[i].PortName);
                             continue;
                         }
 
 
                         if (ping == "!\r")
                         {
-                            _serialPort = Portslist[i];
-                            _serialPort.ReadTimeout = -1;
+                            IAudioEndpointVolume._serialPort = Portslist[i];
+                            IAudioEndpointVolume._serialPort.ReadTimeout = -1;
                             found = true;
-                            
 
-                            Console.WriteLine("Arduino is at " + Portslist[i].PortName);
+
+                            LogMessage("Arduino is at " + Portslist[i].PortName);
                             Portslist.RemoveAt(i);
                         }
                     }
                     // close remaining ports
                     for (int i = 0; i < Portslist.Count; i++)
                     {
-                        Console.WriteLine(Portslist[i].PortName + " Closed");
+                        LogMessage(Portslist[i].PortName + " Closed");
                         Portslist[i].Close();
                     }
                     if (found) break;
@@ -866,7 +882,7 @@ namespace AudioController
                 }
 
             }
-             var result=Tuple.Create(_serialPort, ports);
+            var result = Tuple.Create(IAudioEndpointVolume._serialPort, ports);
             return result;
         }
 
@@ -878,15 +894,20 @@ namespace AudioController
         //    }
 
         //}
+
+
+
         static void Main(string[] args)
         {
-           
+
             int[] prev_volumes = new int[3];
             string[] initial_ports = { "0" };
             var output = find_arduino(initial_ports);
             SerialPort _serialPort = output.Item1;
-            string[] prev_ports =output.Item2;
-           
+            string[] prev_ports = output.Item2;
+
+            // Reset the log file
+            File.Delete(logFile);
 
             while (true)
             {
@@ -894,14 +915,14 @@ namespace AudioController
                 {
                     bool use_active = true;
                     string input = _serialPort.ReadLine();
-                    Console.WriteLine(input);
+                    LogMessage(input);
                     List<int> volumes = new List<int>(Array.ConvertAll(input.Split(' '), int.Parse));
 
 
                     // get active window
-                    IntPtr hWnd = GetForegroundWindow();
+                    IntPtr hWnd = IAudioEndpointVolume.GetForegroundWindow();
                     int active_ID;
-                    GetWindowThreadProcessId(hWnd, out active_ID);
+                    IAudioEndpointVolume.GetWindowThreadProcessId(hWnd, out active_ID);
 
 
                     // set active aplication
@@ -920,25 +941,27 @@ namespace AudioController
                             //if (active_ID == discord_processes[i].Id) use_active = false;// check if discord is active program
                             AudioManager.SetApplicationVolume(discord_processes[4].Id, volumes[1]);
                         }
-                        else {
-                            Console.WriteLine("discord not open");
-                       }
+                        else
+                        {
+                            LogMessage("discord not open");
+                        }
 
                     }
                     if (prev_volumes[2] != volumes[2])
                     {
                         var firefox_processes = Process.GetProcessesByName("Firefox");
-                        if (firefox_processes.Length > 0) { 
-                        for (int i = 0; i < firefox_processes.Length; i++)
+                        if (firefox_processes.Length > 0)
                         {
-                            //if (active_ID == firefox_processes[i].Id) use_active = false; // check if firefox is active program
-                            AudioManager.SetApplicationVolume(firefox_processes[i].Id, volumes[2]);
+                            for (int i = 0; i < firefox_processes.Length; i++)
+                            {
+                                //if (active_ID == firefox_processes[i].Id) use_active = false; // check if firefox is active program
+                                AudioManager.SetApplicationVolume(firefox_processes[i].Id, volumes[2]);
+                            }
                         }
                     }
-                    }
-                 
-                   
-                        // create previous  volumes array
+
+
+                    // create previous  volumes array
                     for (int i = 0; i < prev_volumes.Length; i++)
                     {
                         prev_volumes[i] = volumes[i];
@@ -946,16 +969,16 @@ namespace AudioController
                 }
                 catch (System.NullReferenceException)
                 {
-                    Console.WriteLine("null exception");
+                    LogMessage("null exception");
                     output = find_arduino(prev_ports);
-                     _serialPort = output.Item1;
+                    _serialPort = output.Item1;
                     prev_ports = output.Item2;
                     Thread.Sleep(5000);
 
                 }
                 catch
                 {
-                    Console.WriteLine("was yoiked");
+                    LogMessage("was yoiked");
                     output = find_arduino(prev_ports);
                     _serialPort = output.Item1;
                     prev_ports = output.Item2;
@@ -966,5 +989,4 @@ namespace AudioController
         }
     }
 
-    #endregion
 }
