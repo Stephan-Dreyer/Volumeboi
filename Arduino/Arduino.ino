@@ -25,8 +25,27 @@ char pot2_percentage_str[sizeof(char)*4];
 char pot3_percentage_str[sizeof(char)*4];
 char pot4_percentage_str[sizeof(char)*4];
 unsigned long now;
+
+
+
+
+int calc_log(int percentage){
+  percentage=abs(100-percentage);
+    double log_percentage=(log((double)percentage))/log(100)*100;
+    int log_percentage_int=floor(abs(log_percentage-100));
+    return log_percentage_int;
+    
+ 
+  
+
+  
+  
+  
+  
+  }
 void setup() {
   Serial.begin(112500);
+  
 pinMode(A4,INPUT);
 pinMode(A6,INPUT);
 pinMode(A5,INPUT);
@@ -122,5 +141,6 @@ return pot;
 int calc_percentage(int pot,int* prev){
  *prev=pot;
    int pot_percentage=floor(((double)pot/(double)1023)*100);
+   pot_percentage=calc_log(pot_percentage);
    return pot_percentage;
 }
