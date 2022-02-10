@@ -1,7 +1,7 @@
 
 <h1>VolumeBoi</h1>
-<h3>A set of volume knobs that control the volume levels of diffrent applications in windows.</h3>
-<p>Exists in two parts : Embedded Arduino Program & Lightweight PC application </p> 
+<h3>A set of volume knobs that control the volume levels of different applications in windows.</h3>
+<p>Exists in two parts : Embedded Arduino Program & Lightweight PC Application </p> 
 
 Currently  knobs are programmed to adjust the following programs
 <ol>
