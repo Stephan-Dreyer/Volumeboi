@@ -93,7 +93,7 @@ void loop() {
  itoa(pot3_percentage,pot3_percentage_str,10);
  itoa(pot4_percentage,pot4_percentage_str,10);
 
-// limit the sample rate to avoid flooding the serial buffer
+// limit the sample rate to avoid flooding the serial buffer and excessive CPU usage on the desktop side
  if ((millis()-now)>=130){
   now=millis();
   //only send if a value changes to reduce the number of updates the desktop program has to perform
