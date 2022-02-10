@@ -9,25 +9,12 @@ using System.Linq;
 using System.Threading;
 // ReSharper disable SuspiciousTypeConversion.Global
 // ReSharper disable InconsistentNaming
-
-
-
-
-
-
-
-
-
-
-
-
-
 namespace AudioController
 {
     /// <summary>
     /// Controls audio using the Windows CoreAudio API
-    /// from: http://stackoverflow.com/questions/14306048/controling-volume-mixer
-    /// and: http://netcoreaudio.codeplex.com/
+    /// Class written by Sverrir Sigmundarson
+    ///https://gist.github.com/sverrirs/d099b34b7f72bb4fb386
     /// </summary>
     public static class AudioManager
     {
