@@ -111,6 +111,8 @@ namespace AudioController
             {
                 try
                 {
+                    // bool to determine wether to disable active window knob
+                    bool useActive = false;
                     // read output from device
                     string input = _serialPort.ReadLine();
                     Console.WriteLine(input);
@@ -119,17 +121,17 @@ namespace AudioController
                     // get active window
                     IntPtr hWnd = GetForegroundWindow();
                     GetWindowThreadProcessId(hWnd, out int active_ID);
-                    // set active aplication volume
-                    if (prev_volumes[0] != volumes[0])
-                    {
-                        AudioManager.SetApplicationVolume(active_ID, volumes[0]);
-                    }
+  
                     // set discord and zoom volume
                     if (prev_volumes[1] != volumes[1])
                     {
                         var discord_processes = Process.GetProcessesByName("Discord");
                         if (discord_processes.Length > 0)
                         {
+                            if (discord_processes[4].Id == active_ID)
+                            {
+                                useActive = false;
+                            }
                             AudioManager.SetApplicationVolume(discord_processes[4].Id, volumes[1]);
                         }
                         else
@@ -143,6 +145,10 @@ namespace AudioController
                             {
                                 for (int i = 0; i < zoom_processes.Length; i++)
                                 {
+                                    if (zoom_processes[i].Id == active_ID)
+                                    {
+                                        useActive = false;
+                                    }
                                     AudioManager.SetApplicationVolume(zoom_processes[i].Id, volumes[1]);
                                 }
                             }
@@ -156,6 +162,10 @@ namespace AudioController
                         {
                             for (int i = 0; i < firefox_processes.Length; i++)
                             {
+                                if (firefox_processes[i].Id == active_ID)
+                                {
+                                    useActive = false;
+                                }
                                 AudioManager.SetApplicationVolume(firefox_processes[i].Id, volumes[2]);
                             }
                         }
@@ -168,9 +178,19 @@ namespace AudioController
                         {
                             for (int i = 0; i < spotify_processes.Length; i++)
                             {
+                                if (spotify_processes[i].Id == active_ID)
+                                {
+                                    useActive = false;
+                                }
                                 AudioManager.SetApplicationVolume(spotify_processes[i].Id, volumes[3]);
                             }
                         }
+                    }
+
+                    // set active aplication volume
+                    if (prev_volumes[0] != volumes[0] && useActive )
+                    {
+                        AudioManager.SetApplicationVolume(active_ID, volumes[0]);
                     }
                     // create previous  volumes array
                     for (int i = 0; i < prev_volumes.Length; i++)
