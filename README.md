@@ -21,7 +21,7 @@ Hardware Used:
 
 Notes:
 <ul>
-<li>Only Tested with Windows 10</li>
+<li> Tested on Windows 10 & 11</li>
 <li>Ideally Logaraithmic Potentiometers should have been used for a more natural volume increase but this was implemented in software instead</li>
 </ul>
 
