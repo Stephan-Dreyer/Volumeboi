@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 // constants
-#define alpha 0.2
+#define alpha 0.8
 //funciton defs
 int calc_percentage(int pot,int* prev);
 int scale(int pot);
