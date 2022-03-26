@@ -107,12 +107,26 @@ namespace AudioController
             // assign serial port that device was found on
             SerialPort _serialPort = output.Item1;
             string[] prev_ports = output.Item2;
+
+            // find all iniital processes
+            int[] discord_processes = Process.GetProcessesByName("Discord").Select(p => p.Id).ToArray();
+    
+            int[] zoom_processes = Process.GetProcessesByName("Zoom").Select(p => p.Id).ToArray();
+ 
+            int[] firefox_processes = Process.GetProcessesByName("Firefox").Select(p => p.Id).ToArray();
+         
+            int[] spotify_processes = Process.GetProcessesByName("Spotify").Select(p => p.Id).ToArray();
+
+            List<int[]> usedProcessID = new List<int[]>(){ discord_processes, zoom_processes, firefox_processes, spotify_processes };
+            bool useActive = true;
+
+       
             while (true)
             {
                 try
                 {
-                    // bool to determine wether to disable active window knob
-                    bool useActive = false;
+    
+                
                     // read output from device
                     string input = _serialPort.ReadLine();
                     Console.WriteLine(input);
@@ -125,14 +139,11 @@ namespace AudioController
                     // set discord and zoom volume
                     if (prev_volumes[1] != volumes[1])
                     {
-                        var discord_processes = Process.GetProcessesByName("Discord");
+                         discord_processes = Process.GetProcessesByName("Discord").Select(p => p.Id).ToArray(); 
                         if (discord_processes.Length > 0)
                         {
-                            if (discord_processes[4].Id == active_ID)
-                            {
-                                useActive = false;
-                            }
-                            AudioManager.SetApplicationVolume(discord_processes[4].Id, volumes[1]);
+                        
+                            AudioManager.SetApplicationVolume(discord_processes[4], volumes[1]);
                         }
                         else
                         {
@@ -140,16 +151,13 @@ namespace AudioController
                         }
                         if (prev_volumes[1] != volumes[1])
                         {
-                            var zoom_processes = Process.GetProcessesByName("Zoom");
+                            zoom_processes = Process.GetProcessesByName("Zoom").Select(p => p.Id).ToArray();;
                             if (zoom_processes.Length > 0)
                             {
                                 for (int i = 0; i < zoom_processes.Length; i++)
                                 {
-                                    if (zoom_processes[i].Id == active_ID)
-                                    {
-                                        useActive = false;
-                                    }
-                                    AudioManager.SetApplicationVolume(zoom_processes[i].Id, volumes[1]);
+                                
+                                    AudioManager.SetApplicationVolume(zoom_processes[i], volumes[1]);
                                 }
                             }
                         }
@@ -157,40 +165,43 @@ namespace AudioController
                     // set firefox volume
                     if (prev_volumes[2] != volumes[2])
                     {
-                        var firefox_processes = Process.GetProcessesByName("Firefox");
+                        firefox_processes = Process.GetProcessesByName("Firefox").Select(p => p.Id).ToArray();
                         if (firefox_processes.Length > 0)
                         {
                             for (int i = 0; i < firefox_processes.Length; i++)
                             {
-                                if (firefox_processes[i].Id == active_ID)
-                                {
-                                    useActive = false;
-                                }
-                                AudioManager.SetApplicationVolume(firefox_processes[i].Id, volumes[2]);
+                              
+                                AudioManager.SetApplicationVolume(firefox_processes[i], volumes[2]);
                             }
                         }
                     }
                     // set spotify volume
                     if (prev_volumes[3] != volumes[3])
                     {
-                        var spotify_processes = Process.GetProcessesByName("Spotify");
+                        spotify_processes = Process.GetProcessesByName("Spotify").Select(p => p.Id).ToArray(); ;
                         if (spotify_processes.Length > 0)
                         {
                             for (int i = 0; i < spotify_processes.Length; i++)
                             {
-                                if (spotify_processes[i].Id == active_ID)
-                                {
-                                    useActive = false;
-                                }
-                                AudioManager.SetApplicationVolume(spotify_processes[i].Id, volumes[3]);
+                              
+                                AudioManager.SetApplicationVolume(spotify_processes[i], volumes[3]);
                             }
                         }
                     }
 
                     // set active aplication volume
-                    if (prev_volumes[0] != volumes[0] && useActive )
+                    if (prev_volumes[0] != volumes[0])
                     {
+                        foreach (int[] program in usedProcessID)
+                        {
+                            if (program.Contains(active_ID)) { useActive =false ; break; }
+
+                        }
+                        if (useActive) {
+                         
                         AudioManager.SetApplicationVolume(active_ID, volumes[0]);
+                        useActive = true;
+                    }
                     }
                     // create previous  volumes array
                     for (int i = 0; i < prev_volumes.Length; i++)
